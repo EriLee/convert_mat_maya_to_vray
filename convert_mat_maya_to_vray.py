@@ -68,6 +68,8 @@ for mat in selMat:
     #print("color", colorFile)
     if(colorFile):
         maps.update({'color': colorFile})
+        # the file path
+        print(pm.getAttr(colorFile[0].fileTextureName))
     
     
     # hacky way to get to the file node ?
@@ -78,8 +80,7 @@ for mat in selMat:
         if(bumpFile):
             maps.update({'bump': bumpFile})
         
-    # the file path
-    #print(pm.getAttr(bumpFile[0].fileTextureName))
+    
      
     # create the vray material and assign it
     vraySG = createVrayMat(mat, maps)
@@ -102,7 +103,7 @@ def convert_maya_to_vray_material(mat_list):
         color_file = None
         bump_file = None
         
-        spec_file = mat.specularColor.inputs()
+        spec_file = mat.specularRollOff.inputs()
         color_file = mat.color.inputs()
         
         bump_node = mat.normalCamera.inputs()
@@ -113,8 +114,20 @@ def convert_maya_to_vray_material(mat_list):
         mat_dict.update({mat:{'mesh':mesh, 'color':color_file[0], 'spec':spec_file[0], 'bump':bump_file[0]}})
   
             
+    #pprint.pprint(dir(mat))
+    
+    print(mat.getDiffuseCoeff())
+    print(mat.getEccentricity())
+    print(mat.getColor())
+    print(mat.getSpecularRollOff())
+    print(mat.getSpecularColor())
+    
+    
+    
     #print(spec_file, color_file, bump_file)
     return mat_dict
+    
+    
     
 
 
@@ -122,6 +135,6 @@ pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_sce
 
 all_mat = pm.ls(materials=True)
 md = convert_maya_to_vray_material(all_mat)
-pprint.pprint(md)
+#pprint.pprint(md)
 
-createVrayMat(md)
+#createVrayMat(md)
