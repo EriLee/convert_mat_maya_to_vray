@@ -17,112 +17,71 @@ def createVrayMat(mat_dict):
         spec_rolloff_file = info_dict.get('spec_rolloff_file')
         mesh = info_dict.get('mesh')
 
-    # create the vray mat
-    vrayMat = pm.shadingNode('VRayMtl',asShader=True, name='vray_{0}'.format(mat_name))
-    
-    vrayMat.useFresnel.set(True)
-    vrayMat.reflectionSubdivs.set(64)
-    
-    if color_file:
-        pm.connectAttr('{0}.outColor'.format(color_file), '{0}.color'.format(vrayMat))
-    else:
-        color = info_dict.get('color')
-        print('found no color_file', color)
-        vrayMat.color.set(color)
-
-   
-    if spec_color_file:
-        pm.connectAttr('{0}.outColor'.format(spec_color_file), '{0}.reflectionColor'.format(vrayMat))
-    else:
-        spec_color = info_dict.get('spec_color')
-        print('found no spec_file', spec_color)
-        vrayMat.reflectionColor.set(spec_color)
-             
+        # create the vray mat
+        vrayMat = pm.shadingNode('VRayMtl',asShader=True, name='vray_{0}'.format(mat_name))
         
-    if bump_file:
-        pm.connectAttr('{0}.outColor'.format(bump_file), '{0}.bumpMap'.format(vrayMat))
-        vrayMat.bumpMult.set(bump_depth)
+        vrayMat.useFresnel.set(True)
+        vrayMat.reflectionSubdivs.set(64)
         
-    else:
-        print('found no bump_file')
+        if color_file:
+            pm.connectAttr('{0}.outColor'.format(color_file), '{0}.color'.format(vrayMat))
+        else:
+            color = info_dict.get('color')
+            print('found no color_file', color)
+            vrayMat.color.set(color)
+    
+       
+        if spec_color_file:
+            pm.connectAttr('{0}.outColor'.format(spec_color_file), '{0}.reflectionColor'.format(vrayMat))
+        else:
+            spec_color = info_dict.get('spec_color')
+            print('found no spec_file', spec_color)
+            vrayMat.reflectionColor.set(spec_color)
+                 
+            
+        if bump_file:
+            pm.connectAttr('{0}.outColor'.format(bump_file), '{0}.bumpMap'.format(vrayMat))
+            vrayMat.bumpMult.set(bump_depth)
+            
+        else:
+            print('found no bump_file')
+                
+        
+        if diffuse_amount_file:
+            pm.connectAttr('{0}.outColor'.format(diffuse_amount_file), '{0}.diffuseColorAmount'.format(vrayMat))
+        else:
+            diffuse_amount = info_dict.get('diffuse_amount')
+            print('found no diffuse_amount_file', diffuse_amount)
+            vrayMat.diffuseColorAmount.set(diffuse_amount)
+       
+        
+        if reflect_gloss_file:
+            pm.connectAttr('{0}.outColor'.format(reflect_gloss_file), '{0}.reflectionGlossiness'.format(vrayMat))
+        else:
+            reflect_gloss = info_dict.get('reflect_gloss')
+            print('found no reflect_gloss_file', reflect_gloss)
+            vrayMat.reflectionGlossiness.set(reflect_gloss)
+            
+            
+            
+        if spec_rolloff_file:
+            pm.connectAttr('{0}.outColor'.format(spec_rolloff_file), '{0}.reflectionColorAmount'.format(vrayMat))
+        else:
+            spec_rolloff = info_dict.get('spec_rolloff')
+            print('found no spec_rolloff_color_file', spec_rolloff)
+            vrayMat.reflectionColorAmount.set(spec_rolloff)
+            #vrayMat.reflectionColorAmount.set(.5)
             
     
-    if diffuse_amount_file:
-        pm.connectAttr('{0}.outColor'.format(diffuse_amount_file), '{0}.diffuseColorAmount'.format(vrayMat))
-    else:
-        diffuse_amount = info_dict.get('diffuse_amount')
-        print('found no diffuse_amount_file', diffuse_amount)
-        vrayMat.diffuseColorAmount.set(diffuse_amount)
-   
-    
-    if reflect_gloss_file:
-        pm.connectAttr('{0}.outColor'.format(reflect_gloss_file), '{0}.reflectionGlossiness'.format(vrayMat))
-    else:
-        reflect_gloss = info_dict.get('reflect_gloss')
-        print('found no reflect_gloss_file', reflect_gloss)
-        vrayMat.reflectionGlossiness.set(reflect_gloss)
+        # create the shading grp
+        vraySG = pm.sets(renderable=True, noSurfaceShader=True, empty=True, name='vray_{0}SG'.format(mat_name))
+        # connect the mat and SG
+        pm.connectAttr('{0}.outColor'.format(vrayMat), '{0}.surfaceShader'.format(vraySG), force=True)
         
-        
-        
-    if spec_rolloff_file:
-        pm.connectAttr('{0}.outColor'.format(spec_rolloff_file), '{0}.reflectionColorAmount'.format(vrayMat))
-    else:
-        spec_rolloff = info_dict.get('spec_rolloff')
-        print('found no spec_rolloff_color_file', spec_rolloff)
-        vrayMat.reflectionColorAmount.set(spec_rolloff)
-        #vrayMat.reflectionColorAmount.set(.5)
-        
-
-    # create the shading grp
-    vraySG = pm.sets(renderable=True, noSurfaceShader=True, empty=True, name='vray_{0}SG'.format(mat_name))
-    # connect the mat and SG
-    pm.connectAttr('{0}.outColor'.format(vrayMat), '{0}.surfaceShader'.format(vraySG), force=True)
-    
-    if mesh:
-        pm.sets(vraySG, forceElement=mesh)
+        if mesh:
+            pm.sets(vraySG, forceElement=mesh)
 
     
-    
-# select materials
-selMat = pm.ls(materials=True, sl=True)
-
-for mat in selMat:
-    
-    maps = {}
-    sg = mat.listConnections(type='shadingEngine')[0]
-    mesh = sg.listConnections(type='mesh')
-    
-    specFile = mat.specularRollOff.inputs()
-    #print("spec roll off", specFile)
-    
-    if(specFile):
-        maps.update({'specular': specFile})
-
-   
-    colorFile = mat.color.inputs()
-    #print("color", colorFile)
-    if(colorFile):
-        maps.update({'color': colorFile})
-        # the file path
-        print(pm.getAttr(colorFile[0].fileTextureName))
-    
-    
-    # hacky way to get to the file node ?
-    bumpNode = mat.normalCamera.inputs()
-    #print("bump", bumpFile)
-    if(bumpNode):
-        bumpFile = bumpNode[0].listConnections(type="file")
-        if(bumpFile):
-            maps.update({'bump': bumpFile})
-        
-    
-     
-    # create the vray material and assign it
-    vraySG = createVrayMat(mat, maps)
-    pm.sets(vraySG, forceElement=mesh)
-    
-    print(maps)
-
 def convert_maya_to_vray_material(mat_list):
     
     ret_dict = {}
@@ -215,7 +174,8 @@ def convert_maya_to_vray_material(mat_list):
     
 
 
-pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene.mb', force=True)
+#pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene.mb', force=True)
+pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene_multi_maps.mb', force=True)
 #pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene_no_maps.mb', force=True)
 
 all_mat = [mat for mat in pm.ls(materials=True) if type(mat) is pm.nodetypes.Blinn]
