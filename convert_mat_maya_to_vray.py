@@ -1,8 +1,6 @@
 import pymel.core as pm
 import pprint
 
-import pymel.core as pm
-
 def createVrayMat(mat_dict):
  
     for mat_name, info_dict in mat_dict.iteritems():
@@ -11,7 +9,7 @@ def createVrayMat(mat_dict):
         color_file = info_dict.get('color_file')
         spec_color_file = info_dict.get('spec_color_file')
         bump_file = info_dict.get('bump_file')
-        bump_depth = info_dict['bump_depth']
+        bump_depth = info_dict.get('bump_depth')
         diffuse_amount_file = info_dict.get('diffuse_amount_file')
         reflect_gloss_file = info_dict.get('reflect_gloss_file')
         spec_rolloff_file = info_dict.get('spec_rolloff_file')
@@ -183,3 +181,7 @@ md = convert_maya_to_vray_material(all_mat)
 pprint.pprint(md)
 
 createVrayMat(md)
+
+# select the old materials
+pm.select(md.keys())
+
