@@ -46,7 +46,7 @@ def createVrayMat(mat_dict):
                 
         
         if diffuse_amount_file:
-            pm.connectAttr('{0}.outColor'.format(diffuse_amount_file), '{0}.diffuseColorAmount'.format(vrayMat))
+            pm.connectAttr('{0}.outAlpha'.format(diffuse_amount_file), '{0}.diffuseColorAmount'.format(vrayMat))
         else:
             diffuse_amount = info_dict.get('diffuse_amount')
             print('found no diffuse_amount_file', diffuse_amount)
@@ -54,7 +54,7 @@ def createVrayMat(mat_dict):
        
         
         if reflect_gloss_file:
-            pm.connectAttr('{0}.outColor'.format(reflect_gloss_file), '{0}.reflectionGlossiness'.format(vrayMat))
+            pm.connectAttr('{0}.outAlpha'.format(reflect_gloss_file), '{0}.reflectionGlossiness'.format(vrayMat))
         else:
             reflect_gloss = info_dict.get('reflect_gloss')
             print('found no reflect_gloss_file', reflect_gloss)
@@ -63,7 +63,7 @@ def createVrayMat(mat_dict):
             
             
         if spec_rolloff_file:
-            pm.connectAttr('{0}.outColor'.format(spec_rolloff_file), '{0}.reflectionColorAmount'.format(vrayMat))
+            pm.connectAttr('{0}.outAlpha'.format(spec_rolloff_file), '{0}.reflectionColorAmount'.format(vrayMat))
         else:
             spec_rolloff = info_dict.get('spec_rolloff')
             print('found no spec_rolloff_color_file', spec_rolloff)
@@ -170,10 +170,8 @@ def convert_maya_to_vray_material(mat_list):
 
     return ret_dict
     
-
-
 #pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene.mb', force=True)
-pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene_multi_maps.mb', force=True)
+#pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene_multi_maps.mb', force=True)
 #pm.openFile('/Users/johan/Developement/maya/convert_mat_maya_to_vray/convert_scene_no_maps.mb', force=True)
 
 all_mat = [mat for mat in pm.ls(materials=True) if type(mat) is pm.nodetypes.Blinn]
@@ -184,4 +182,3 @@ createVrayMat(md)
 
 # select the old materials
 pm.select(md.keys())
-
